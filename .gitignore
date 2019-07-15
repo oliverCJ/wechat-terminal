@@ -2,3 +2,4 @@ auth.record
 wxlog.log
 go.sum
 .idea
+.DS_Store
