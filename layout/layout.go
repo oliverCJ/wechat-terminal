@@ -13,11 +13,6 @@ import (
 	"time"
 )
 
-const (
-	CurMark  = "(bg-red)"
-	PageSize = 45
-)
-
 type Layout struct {
 	userChatListBox      *widgets.List //聊天窗口
 	userContactListBox   *widgets.List
