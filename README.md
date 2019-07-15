@@ -11,4 +11,7 @@ ENTER / CTRL+s：发送消息
 F1：开启聊天目标聊天框
 ```
 
+## 截图
+![avatar](image/screen_shot.jpg)
+
 > 下一步重构，重新组织文件目录，引入机器人聊天，其他

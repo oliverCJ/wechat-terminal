@@ -3,38 +3,39 @@ package layout
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 	go_wechat "github.com/oliverCJ/go-wechat"
 	"github.com/oliverCJ/go-wechat/constants/types"
 	"github.com/oliverCJ/go-wechat/services"
-	"log"
-	"strings"
-	"time"
 )
 
 type Layout struct {
-	userChatListBox      *widgets.List //聊天窗口
-	userContactListBox   *widgets.List
-	userGroupListBox *widgets.List
-	headerBox            *widgets.Paragraph
-	chatBox              *widgets.List //消息窗口
-	inputBox             *widgets.Paragraph // 输入框
+	userChatListBox    *widgets.List //聊天窗口
+	userContactListBox *widgets.List
+	userGroupListBox   *widgets.List
+	headerBox          *widgets.Paragraph
+	chatBox            *widgets.List      //消息窗口
+	inputBox           *widgets.Paragraph // 输入框
 
-	contactList          services.ContactList // 通讯录
-	chatUserList         []services.Member // 当前聊天用户
+	contactList  services.ContactList // 通讯录
+	chatUserList []services.Member    // 当前聊天用户
 
-	chatMsgMapHistory				map[string][]string
-	chatMsgMapNew				map[string][]string
+	chatMsgMapHistory map[string][]string
+	chatMsgMapNew     map[string][]string
 
-	curChatFromName         string // 当前聊天者
-	useInfo         services.User                        // 用户名字
-	readMsg              <-chan services.Message         // 接收消息通道
-	sendMsg              chan<- services.SendMessage     // 发送消息通道
-	sendMsgResp          <-chan services.SendMessageResp // 发送消息响应通道
-	closeChan            <-chan bool                     // 微信服务停止通知通道
-	autoReply            bool
-	globalUserMap        map[string]services.TinyMemberInfo
+	curChatFromName string                          // 当前聊天者
+	useInfo         services.User                   // 用户名字
+	readMsg         <-chan services.Message         // 接收消息通道
+	sendMsg         chan<- services.SendMessage     // 发送消息通道
+	sendMsgResp     <-chan services.SendMessageResp // 发送消息响应通道
+	closeChan       <-chan bool                     // 微信服务停止通知通道
+	autoReply       bool
+	globalUserMap   map[string]services.TinyMemberInfo
 }
 
 func NewLayout() *Layout {
@@ -66,7 +67,6 @@ func NewLayout() *Layout {
 	userGroupListBox.SelectedRow = 0
 	userGroupListBox.Rows = []string{}
 
-
 	// 聊天窗
 	chatBox := widgets.NewList()
 	chatBox.TextStyle = ui.NewStyle(ui.ColorWhite)
@@ -88,23 +88,23 @@ func NewLayout() *Layout {
 	headerBox.Text = "←/→ 向左或向右切换tab ↑/↓ 选择联系人 F1 选中聊天对象 CTRL+s/<Enter>发送消息 CTRL+c 退出 "
 
 	return &Layout{
-		userChatListBox:      userChatListBox,
-		userContactListBox:   userContactListBox,
-		userGroupListBox: userGroupListBox,
-		chatBox:              chatBox,
-		inputBox:             inputBox,
-		headerBox:            headerBox,
+		userChatListBox:    userChatListBox,
+		userContactListBox: userContactListBox,
+		userGroupListBox:   userGroupListBox,
+		chatBox:            chatBox,
+		inputBox:           inputBox,
+		headerBox:          headerBox,
 
 		contactList: go_wechat.GetContact(),
-		useInfo :go_wechat.GetUserInfo(),
+		useInfo:     go_wechat.GetUserInfo(),
 
 		chatMsgMapHistory: make(map[string][]string),
-		chatMsgMapNew: make(map[string][]string),
+		chatMsgMapNew:     make(map[string][]string),
 
-		readMsg: go_wechat.GetReadChan(),
-		sendMsg: go_wechat.GetSendChan(),
+		readMsg:     go_wechat.GetReadChan(),
+		sendMsg:     go_wechat.GetSendChan(),
 		sendMsgResp: go_wechat.GetSendRespChan(),
-		closeChan: go_wechat.GetCloseChan(),
+		closeChan:   go_wechat.GetCloseChan(),
 
 		globalUserMap: go_wechat.GetGlobalMemberMap(),
 	}
@@ -234,7 +234,7 @@ func (l *Layout) Init() {
 
 	for {
 		select {
-		case <-time.Tick(20*time.Second):
+		case <-time.Tick(20 * time.Second):
 			chatUserIndexMap = l.initChatList()
 			ui.Clear()
 			ui.Render(gridRight)
@@ -303,7 +303,6 @@ func (l *Layout) Init() {
 					}
 				}
 
-
 				ui.Clear()
 				ui.Render(gridRight)
 			case "<C-s>", "<Enter>":
@@ -311,10 +310,10 @@ func (l *Layout) Init() {
 				if content != "" {
 					l.sendMsg <- services.SendMessage{
 						ToUserName: l.curChatFromName,
-						Content: content,
-						LocalID: fmt.Sprintf("%d", time.Now().Unix()),
+						Content:    content,
+						LocalID:    fmt.Sprintf("%d", time.Now().Unix()),
 					}
-					resp := <- l.sendMsgResp
+					resp := <-l.sendMsgResp
 					if resp.BaseRequest.Ret == 0 {
 						// TODO 发送成功
 					}
@@ -335,7 +334,7 @@ func (l *Layout) Init() {
 					if len(runes) == 1 {
 						l.inputBox.Text = ""
 					} else {
-						l.inputBox.Text = string(runes[:len(runes) - 1])
+						l.inputBox.Text = string(runes[:len(runes)-1])
 					}
 					ui.Clear()
 					ui.Render(gridRight)
@@ -365,7 +364,7 @@ func (l *Layout) Init() {
 func (l *Layout) receiveMsg() {
 	for {
 		select {
-		case msg := <- l.readMsg :
+		case msg := <-l.readMsg:
 			if msg.FormatContent != "" {
 				msgSender := ""
 				if msg.FromUserName == l.useInfo.UserName {
